@@ -17,7 +17,7 @@ interface CarCardProps {
 const CarCard = ({ name, price, image, year, fuel, transmission, featured }: CarCardProps) => {
   const handleWhatsAppContact = () => {
     const message = `Hi! I'm interested in the ${name}. Can you provide more details?`;
-    const phoneNumber = "+1234567890"; // This will be dynamic from admin settings
+    const phoneNumber = "2547698392";
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, "_blank");
   };

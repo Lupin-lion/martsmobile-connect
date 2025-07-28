@@ -39,9 +39,9 @@ const Footer = () => {
           <div>
             <h4 className="font-semibold mb-4">Contact Info</h4>
             <ul className="space-y-2 text-white/80">
-              <li>+1 (234) 567-8900</li>
-              <li>info@martsauto.com</li>
-              <li>Downtown Auto District</li>
+              <li>+254 769 839 2</li>
+              <li>themartswritters@gmail.com</li>
+              <li>Juja City</li>
               <li>Mon-Sat: 9AM-7PM</li>
             </ul>
           </div>

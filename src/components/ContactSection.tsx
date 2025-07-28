@@ -5,7 +5,7 @@ import { MessageCircle, Phone, MapPin, Clock, Star } from "lucide-react";
 const ContactSection = () => {
   const handleWhatsAppContact = () => {
     const message = "Hi! I'm interested in your automobile services. Can you help me?";
-    const phoneNumber = "+1234567890"; // This will be configurable by admin
+    const phoneNumber = "2547698392";
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, "_blank");
   };
@@ -50,7 +50,7 @@ const ContactSection = () => {
                 <CardContent className="p-6 text-center">
                   <Phone className="h-8 w-8 mx-auto mb-3 text-automotive-silver" />
                   <h4 className="font-semibold mb-2">Phone</h4>
-                  <p className="text-white/80">+1 (234) 567-8900</p>
+                  <p className="text-white/80">+254 769 839 2</p>
                 </CardContent>
               </Card>
 
@@ -58,7 +58,7 @@ const ContactSection = () => {
                 <CardContent className="p-6 text-center">
                   <MapPin className="h-8 w-8 mx-auto mb-3 text-automotive-silver" />
                   <h4 className="font-semibold mb-2">Location</h4>
-                  <p className="text-white/80">Downtown Auto District</p>
+                  <p className="text-white/80">Juja City</p>
                 </CardContent>
               </Card>
 
