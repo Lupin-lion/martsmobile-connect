@@ -17,6 +17,10 @@ const CarsSection = () => {
       fuel: "Petrol",
       transmission: "Automatic",
       featured: true,
+      description: "Luxury SUV with premium interior, advanced safety features, and powerful performance. Includes leather seats, panoramic sunroof, navigation system, and AWD. Perfect for both city driving and long journeys.",
+      mileage: "45,000 km",
+      engine: "3.0L V6 Turbo",
+      link: "/cars/mercedes-gle-2022"
     },
     {
       id: "2", 
@@ -26,6 +30,10 @@ const CarsSection = () => {
       year: "2021",
       fuel: "Petrol",
       transmission: "Automatic",
+      description: "Sport sedan with dynamic handling and refined comfort. Features BMW's latest infotainment system, sport seats, and premium sound system. Excellent fuel efficiency and driving dynamics.",
+      mileage: "52,000 km",
+      engine: "2.0L 4-Cylinder Turbo",
+      link: "/cars/bmw-3series-2021"
     },
     {
       id: "3",
@@ -35,6 +43,10 @@ const CarsSection = () => {
       year: "2023",
       fuel: "Petrol",
       transmission: "Manual",
+      description: "Compact hatchback perfect for urban driving. Modern design with excellent build quality, spacious interior, and advanced safety features. Great value for money with low running costs.",
+      mileage: "15,000 km",
+      engine: "1.4L 4-Cylinder",
+      link: "/cars/volkswagen-golf-2023"
     },
   ];
 
