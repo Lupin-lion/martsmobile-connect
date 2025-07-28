@@ -39,7 +39,7 @@ const Footer = () => {
           <div>
             <h4 className="font-semibold mb-4">Contact Info</h4>
             <ul className="space-y-2 text-white/80">
-              <li>+254 769 839 2</li>
+              <li>+254 704 698 392</li>
               <li>themartswritters@gmail.com</li>
               <li>Juja City</li>
               <li>Mon-Sat: 9AM-7PM</li>
