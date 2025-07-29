@@ -1,13 +1,23 @@
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import CarCard from "./CarCard";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, Car as CarIcon } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import car1 from "@/assets/car1.jpg";
 import car2 from "@/assets/car2.jpg";
 import car3 from "@/assets/car3.jpg";
+import bmwImage from "@/assets/bmw-3series.jpg";
 
 const CarsSection = () => {
-  // Sample car data - in a real app, this would come from a database
-  const cars = [
+  const navigate = useNavigate();
+  const [cars, setCars] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<any>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // Sample car data as fallback
+  const sampleCars = [
     {
       id: "1",
       name: "Mercedes-Benz GLE",
@@ -25,8 +35,8 @@ const CarsSection = () => {
     {
       id: "2", 
       name: "BMW 3 Series",
-      price: "$38,500",
-      image: car2,
+      price: "$32,000",
+      image: bmwImage,
       year: "2021",
       fuel: "Petrol",
       transmission: "Automatic",
@@ -38,7 +48,7 @@ const CarsSection = () => {
     {
       id: "3",
       name: "Volkswagen Golf",
-      price: "$22,000",
+      price: "$24,000",
       image: car3,
       year: "2023",
       fuel: "Petrol",
@@ -49,6 +59,90 @@ const CarsSection = () => {
       link: "/cars/volkswagen-golf-2023"
     },
   ];
+
+  useEffect(() => {
+    checkAuth();
+    fetchCars();
+  }, []);
+
+  const checkAuth = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    setUser(session?.user || null);
+    
+    if (session?.user) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("user_id", session.user.id)
+        .single();
+      
+      setIsAdmin(profile?.role === "admin");
+    }
+  };
+
+  const fetchCars = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("cars")
+        .select("*")
+        .order("featured", { ascending: false })
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error("Error fetching cars:", error);
+        // Use sample data as fallback
+        setCars(sampleCars.map(car => ({
+          ...car,
+          image_url: null // Use local images for sample data
+        })));
+      } else {
+        // If no cars in database, show sample cars
+        if (data.length === 0) {
+          setCars(sampleCars.map(car => ({
+            ...car,
+            image_url: null
+          })));
+        } else {
+          setCars(data);
+        }
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      setCars(sampleCars.map(car => ({
+        ...car,
+        image_url: null
+      })));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getCarImage = (car: any) => {
+    // Use image_url from database if available, otherwise use sample images
+    if (car.image_url) {
+      return car.image_url;
+    }
+    
+    // Use local images for sample data
+    if (car.name.includes("Mercedes")) return car1;
+    if (car.name.includes("BMW")) return bmwImage;
+    if (car.name.includes("Volkswagen")) return car3;
+    
+    return car1; // Default image
+  };
+
+  if (loading) {
+    return (
+      <section id="cars" className="py-20 bg-automotive-light">
+        <div className="container mx-auto px-4">
+          <div className="text-center">
+            <CarIcon className="h-12 w-12 text-primary mx-auto mb-4 animate-spin" />
+            <p>Loading cars...</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="cars" className="py-20 bg-automotive-light">
@@ -64,18 +158,36 @@ const CarsSection = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
           {cars.map((car) => (
-            <CarCard key={car.id} {...car} />
+            <CarCard 
+              key={car.id} 
+              {...car} 
+              image={getCarImage(car)}
+              mileage={car.mileage}
+              engine={car.engine}
+              description={car.description}
+            />
           ))}
         </div>
 
         <div className="text-center">
-          <Button size="lg" variant="outline" className="mr-4">
-            View All Cars
-          </Button>
-          <Button size="lg" className="bg-automotive-blue hover:bg-automotive-blue/90">
-            <Plus className="mr-2 h-5 w-5" />
-            Admin: Add New Car
-          </Button>
+          {isAdmin ? (
+            <Button 
+              size="lg" 
+              className="bg-automotive-blue hover:bg-automotive-blue/90"
+              onClick={() => navigate("/admin")}
+            >
+              <Plus className="mr-2 h-5 w-5" />
+              Manage Cars
+            </Button>
+          ) : user ? (
+            <Button size="lg" variant="outline">
+              View All Cars
+            </Button>
+          ) : (
+            <Button size="lg" onClick={() => navigate("/auth")}>
+              Login to Manage Cars
+            </Button>
+          )}
         </div>
       </div>
     </section>
