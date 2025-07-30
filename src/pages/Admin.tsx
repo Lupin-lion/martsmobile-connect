@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Car, Plus, LogOut, Edit, Trash2 } from "lucide-react";
+import { Car, Plus, LogOut, Edit, Trash2, Upload, X } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface Car {
@@ -43,6 +43,8 @@ const Admin = () => {
     featured: false,
   });
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [selectedImages, setSelectedImages] = useState<File[]>([]);
+  const [uploadedImageUrls, setUploadedImageUrls] = useState<string[]>([]);
 
   useEffect(() => {
     checkUser();
@@ -108,26 +110,79 @@ const Admin = () => {
     setFormData(prev => ({ ...prev, featured: checked }));
   };
 
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (selectedImages.length + files.length > 5) {
+      toast({
+        title: "Too many images",
+        description: "You can only upload up to 5 images per car.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setSelectedImages(prev => [...prev, ...files].slice(0, 5));
+  };
+
+  const removeImage = (index: number) => {
+    setSelectedImages(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const uploadImages = async () => {
+    const uploadPromises = selectedImages.map(async (file, index) => {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}_${index}.${fileExt}`;
+      const filePath = `cars/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('car-images')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage
+        .from('car-images')
+        .getPublicUrl(filePath);
+
+      return data.publicUrl;
+    });
+
+    return Promise.all(uploadPromises);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
+      let imageUrls: string[] = [];
+      
+      if (selectedImages.length > 0) {
+        imageUrls = await uploadImages();
+      }
+
+      const carData = {
+        name: formData.name,
+        price: formData.price,
+        year: formData.year,
+        fuel: formData.fuel,
+        transmission: formData.transmission,
+        description: formData.description,
+        mileage: formData.mileage,
+        engine: formData.engine,
+        featured: formData.featured,
+        main_image_url: imageUrls[0] || null,
+        image_1_url: imageUrls[1] || null,
+        image_2_url: imageUrls[2] || null,
+        image_3_url: imageUrls[3] || null,
+        image_4_url: imageUrls[4] || null,
+        image_5_url: imageUrls[5] || null,
+      };
+
       if (editingId) {
         // Update existing car
         const { error } = await supabase
           .from("cars")
-          .update({
-            name: formData.name,
-            price: formData.price,
-            year: formData.year,
-            fuel: formData.fuel,
-            transmission: formData.transmission,
-            description: formData.description,
-            mileage: formData.mileage,
-            engine: formData.engine,
-            featured: formData.featured,
-          })
+          .update(carData)
           .eq("id", editingId);
 
         if (error) throw error;
@@ -142,15 +197,7 @@ const Admin = () => {
         const { error } = await supabase
           .from("cars")
           .insert({
-            name: formData.name,
-            price: formData.price,
-            year: formData.year,
-            fuel: formData.fuel,
-            transmission: formData.transmission,
-            description: formData.description,
-            mileage: formData.mileage,
-            engine: formData.engine,
-            featured: formData.featured,
+            ...carData,
             created_by: user.id,
           });
 
@@ -174,6 +221,8 @@ const Admin = () => {
         engine: "",
         featured: false,
       });
+      setSelectedImages([]);
+      setUploadedImageUrls([]);
 
       fetchCars();
     } catch (error: any) {
@@ -369,6 +418,56 @@ const Admin = () => {
                   />
                 </div>
 
+                <div className="space-y-2">
+                  <Label>Car Images (Up to 5)</Label>
+                  <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6">
+                    <div className="text-center">
+                      <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Upload up to 5 images of your car
+                      </p>
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onChange={handleImageUpload}
+                        className="hidden"
+                        id="image-upload"
+                      />
+                      <Label htmlFor="image-upload" className="cursor-pointer">
+                        <Button type="button" variant="outline" asChild>
+                          <span>Choose Images</span>
+                        </Button>
+                      </Label>
+                    </div>
+                    
+                    {selectedImages.length > 0 && (
+                      <div className="mt-4 grid grid-cols-2 gap-2">
+                        {selectedImages.map((file, index) => (
+                          <div key={index} className="relative">
+                            <div className="aspect-video bg-muted rounded-lg overflow-hidden">
+                              <img
+                                src={URL.createObjectURL(file)}
+                                alt={`Preview ${index + 1}`}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="sm"
+                              className="absolute top-1 right-1 h-6 w-6 p-0"
+                              onClick={() => removeImage(index)}
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
                 <div className="flex items-center space-x-2">
                   <Switch
                     id="featured"
@@ -396,6 +495,8 @@ const Admin = () => {
                         engine: "",
                         featured: false,
                       });
+                      setSelectedImages([]);
+                      setUploadedImageUrls([]);
                     }}>
                       Cancel
                     </Button>
