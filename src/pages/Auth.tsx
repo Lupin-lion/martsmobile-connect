@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Car, Eye, EyeOff } from "lucide-react";
@@ -18,6 +19,7 @@ const Auth = () => {
     email: "",
     password: "",
     fullName: "",
+    role: "user",
   });
 
   useEffect(() => {
@@ -64,7 +66,7 @@ const Auth = () => {
             user_id: data.user.id,
             email: formData.email,
             full_name: formData.fullName,
-            role: "user", // Default role
+            role: formData.role,
           });
 
         if (profileError) {
@@ -92,20 +94,70 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: formData.email,
-        password: formData.password,
-      });
-
-      if (error) throw error;
-
-      if (data.user) {
-        toast({
-          title: "Welcome back!",
-          description: "You have been signed in successfully.",
+      // Check for hardcoded admin credentials
+      if (formData.email === "whatsapp" && formData.password === "SUPREME@2") {
+        // Try to sign in with admin account
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: "admin@cardealer.com",
+          password: "SUPREME@2",
         });
-        navigate("/");
+
+        if (signInError && signInError.message.includes("Invalid login credentials")) {
+          // If admin doesn't exist, create account
+          const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+            email: "admin@cardealer.com",
+            password: "SUPREME@2",
+            options: {
+              emailRedirectTo: `${window.location.origin}/`,
+              data: {
+                full_name: "Admin User",
+                role: "admin"
+              }
+            }
+          });
+
+          if (signUpError) {
+            throw signUpError;
+          } else if (signUpData.user) {
+            // Create admin profile
+            await supabase
+              .from("profiles")
+              .insert({
+                user_id: signUpData.user.id,
+                email: "admin@cardealer.com",
+                full_name: "Admin User",
+                role: "admin",
+              });
+
+            toast({
+              title: "Admin Created",
+              description: "Admin account created and signed in successfully!",
+            });
+          }
+        } else if (signInError) {
+          throw signInError;
+        } else {
+          toast({
+            title: "Admin Login",
+            description: "Admin signed in successfully!",
+          });
+        }
+      } else {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: formData.email,
+          password: formData.password,
+        });
+
+        if (error) throw error;
+
+        if (data.user) {
+          toast({
+            title: "Welcome back!",
+            description: "You have been signed in successfully.",
+          });
+        }
       }
+      navigate("/");
     } catch (error: any) {
       toast({
         title: "Error",
@@ -137,16 +189,21 @@ const Auth = () => {
             <TabsContent value="signin">
               <form onSubmit={handleSignIn} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="signin-email">Email</Label>
+                  <Label htmlFor="signin-email">Email or Username</Label>
                   <Input
                     id="signin-email"
                     name="email"
-                    type="email"
-                    placeholder="Enter your email"
+                    type="text"
+                    placeholder="Enter email or 'whatsapp' for admin"
                     value={formData.email}
                     onChange={handleInputChange}
                     required
                   />
+                  {formData.email === "whatsapp" && (
+                    <p className="text-sm text-muted-foreground">
+                      Admin login detected. Use password: SUPREME@2
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="signin-password">Password</Label>
@@ -234,6 +291,18 @@ const Auth = () => {
                       )}
                     </Button>
                   </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="role">Account Type</Label>
+                  <Select value={formData.role} onValueChange={(value) => setFormData({ ...formData, role: value })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select account type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="user">User (View Cars)</SelectItem>
+                      <SelectItem value="admin">Admin (Manage Cars)</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? "Creating Account..." : "Create Account"}

@@ -8,14 +8,19 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Car, Plus, LogOut, Edit, Trash2, Upload, X } from "lucide-react";
+import { Car, Plus, LogOut, Edit, Trash2 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface Car {
   id: string;
   name: string;
   price: string;
-  image_url: string | null;
+  main_image_url: string | null;
+  image_1_url: string | null;
+  image_2_url: string | null;
+  image_3_url: string | null;
+  image_4_url: string | null;
+  image_5_url: string | null;
   year: string;
   fuel: string;
   transmission: string;
@@ -42,9 +47,8 @@ const Admin = () => {
     engine: "",
     featured: false,
   });
+  const [imageUrls, setImageUrls] = useState<string[]>(["", "", "", "", ""]);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [selectedImages, setSelectedImages] = useState<File[]>([]);
-  const [uploadedImageUrls, setUploadedImageUrls] = useState<string[]>([]);
 
   useEffect(() => {
     checkUser();
@@ -110,28 +114,11 @@ const Admin = () => {
     setFormData(prev => ({ ...prev, featured: checked }));
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    if (selectedImages.length + files.length > 5) {
-      toast({
-        title: "Too many images",
-        description: "You can only upload up to 5 images per car.",
-        variant: "destructive",
-      });
-      return;
-    }
-    setSelectedImages(prev => [...prev, ...files].slice(0, 5));
-  };
-
-  const removeImage = (index: number) => {
-    setSelectedImages(prev => prev.filter((_, i) => i !== index));
-  };
-
-  const uploadImages = async () => {
-    const uploadPromises = selectedImages.map(async (file, index) => {
+  const handleImageUpload = async (file: File, index: number): Promise<string | null> => {
+    try {
       const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}_${index}.${fileExt}`;
-      const filePath = `cars/${fileName}`;
+      const fileName = `${Math.random()}.${fileExt}`;
+      const filePath = `car-images/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from('car-images')
@@ -144,45 +131,56 @@ const Admin = () => {
         .getPublicUrl(filePath);
 
       return data.publicUrl;
-    });
-
-    return Promise.all(uploadPromises);
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast({
+        title: "Upload Error",
+        description: "Failed to upload image",
+        variant: "destructive",
+      });
+      return null;
+    }
   };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const uploadedUrl = await handleImageUpload(file, index);
+    if (uploadedUrl) {
+      const newUrls = [...imageUrls];
+      newUrls[index] = uploadedUrl;
+      setImageUrls(newUrls);
+    }
+  };
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      let imageUrls: string[] = [];
-      
-      if (selectedImages.length > 0) {
-        imageUrls = await uploadImages();
-      }
-
-      const carData = {
-        name: formData.name,
-        price: formData.price,
-        year: formData.year,
-        fuel: formData.fuel,
-        transmission: formData.transmission,
-        description: formData.description,
-        mileage: formData.mileage,
-        engine: formData.engine,
-        featured: formData.featured,
-        main_image_url: imageUrls[0] || null,
-        image_1_url: imageUrls[1] || null,
-        image_2_url: imageUrls[2] || null,
-        image_3_url: imageUrls[3] || null,
-        image_4_url: imageUrls[4] || null,
-        image_5_url: imageUrls[5] || null,
-      };
-
       if (editingId) {
         // Update existing car
         const { error } = await supabase
           .from("cars")
-          .update(carData)
+          .update({
+            name: formData.name,
+            price: formData.price,
+            year: formData.year,
+            fuel: formData.fuel,
+            transmission: formData.transmission,
+            description: formData.description,
+            mileage: formData.mileage,
+            engine: formData.engine,
+            featured: formData.featured,
+            main_image_url: imageUrls[0] || null,
+            image_1_url: imageUrls[1] || null,
+            image_2_url: imageUrls[2] || null,
+            image_3_url: imageUrls[3] || null,
+            image_4_url: imageUrls[4] || null,
+            image_5_url: imageUrls[0] || null,
+          })
           .eq("id", editingId);
 
         if (error) throw error;
@@ -197,8 +195,22 @@ const Admin = () => {
         const { error } = await supabase
           .from("cars")
           .insert({
-            ...carData,
+            name: formData.name,
+            price: formData.price,
+            year: formData.year,
+            fuel: formData.fuel,
+            transmission: formData.transmission,
+            description: formData.description,
+            mileage: formData.mileage,
+            engine: formData.engine,
+            featured: formData.featured,
             created_by: user.id,
+            main_image_url: imageUrls[0] || null,
+            image_1_url: imageUrls[1] || null,
+            image_2_url: imageUrls[2] || null,
+            image_3_url: imageUrls[3] || null,
+            image_4_url: imageUrls[4] || null,
+            image_5_url: imageUrls[0] || null,
           });
 
         if (error) throw error;
@@ -221,8 +233,7 @@ const Admin = () => {
         engine: "",
         featured: false,
       });
-      setSelectedImages([]);
-      setUploadedImageUrls([]);
+      setImageUrls(["", "", "", "", ""]);
 
       fetchCars();
     } catch (error: any) {
@@ -248,6 +259,13 @@ const Admin = () => {
       engine: car.engine || "",
       featured: car.featured,
     });
+    setImageUrls([
+      car.main_image_url || "",
+      car.image_1_url || "",
+      car.image_2_url || "",
+      car.image_3_url || "",
+      car.image_4_url || "",
+    ]);
     setEditingId(car.id);
   };
 
@@ -418,53 +436,33 @@ const Admin = () => {
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label>Car Images (Up to 5)</Label>
-                  <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6">
-                    <div className="text-center">
-                      <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                      <p className="text-sm text-muted-foreground mb-4">
-                        Upload up to 5 images of your car
-                      </p>
-                      <Input
-                        type="file"
-                        accept="image/*"
-                        multiple
-                        onChange={handleImageUpload}
-                        className="hidden"
-                        id="image-upload"
-                      />
-                      <Label htmlFor="image-upload" className="cursor-pointer">
-                        <Button type="button" variant="outline" asChild>
-                          <span>Choose Images</span>
-                        </Button>
-                      </Label>
-                    </div>
-                    
-                    {selectedImages.length > 0 && (
-                      <div className="mt-4 grid grid-cols-2 gap-2">
-                        {selectedImages.map((file, index) => (
-                          <div key={index} className="relative">
-                            <div className="aspect-video bg-muted rounded-lg overflow-hidden">
-                              <img
-                                src={URL.createObjectURL(file)}
-                                alt={`Preview ${index + 1}`}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                            <Button
-                              type="button"
-                              variant="destructive"
-                              size="sm"
-                              className="absolute top-1 right-1 h-6 w-6 p-0"
-                              onClick={() => removeImage(index)}
-                            >
-                              <X className="h-3 w-3" />
-                            </Button>
+
+                <div className="space-y-4">
+                  <Label>Car Images (5 slots)</Label>
+                  <div className="grid grid-cols-2 gap-4">
+                    {[0, 1, 2, 3, 4].map((index) => (
+                      <div key={index} className="space-y-2">
+                        <Label htmlFor={`image-${index}`}>
+                          {index === 0 ? "Main Image" : `Image ${index + 1}`}
+                        </Label>
+                        <Input
+                          id={`image-${index}`}
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleFileChange(e, index)}
+                          className="cursor-pointer"
+                        />
+                        {imageUrls[index] && (
+                          <div className="relative">
+                            <img
+                              src={imageUrls[index]}
+                              alt={`Preview ${index + 1}`}
+                              className="w-full h-20 object-cover rounded border"
+                            />
                           </div>
-                        ))}
+                        )}
                       </div>
-                    )}
+                    ))}
                   </div>
                 </div>
 
@@ -495,8 +493,7 @@ const Admin = () => {
                         engine: "",
                         featured: false,
                       });
-                      setSelectedImages([]);
-                      setUploadedImageUrls([]);
+                      setImageUrls(["", "", "", "", ""]);
                     }}>
                       Cancel
                     </Button>
@@ -512,18 +509,27 @@ const Admin = () => {
               <CardTitle>Manage Cars ({cars.length})</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4 max-h-[600px] overflow-y-auto">
+                  <div className="space-y-4 max-h-[600px] overflow-y-auto">
                 {cars.map((car) => (
                   <div key={car.id} className="border rounded-lg p-4 space-y-2">
                     <div className="flex items-start justify-between">
-                      <div>
-                        <h3 className="font-semibold">{car.name}</h3>
-                        <p className="text-sm text-muted-foreground">{car.price} • {car.year}</p>
-                        {car.featured && (
-                          <span className="inline-block bg-primary text-primary-foreground px-2 py-1 rounded text-xs mt-1">
-                            Featured
-                          </span>
+                      <div className="flex gap-3">
+                        {car.main_image_url && (
+                          <img 
+                            src={car.main_image_url} 
+                            alt={car.name}
+                            className="w-16 h-16 object-cover rounded"
+                          />
                         )}
+                        <div>
+                          <h3 className="font-semibold">{car.name}</h3>
+                          <p className="text-sm text-muted-foreground">{car.price} • {car.year}</p>
+                          {car.featured && (
+                            <span className="inline-block bg-primary text-primary-foreground px-2 py-1 rounded text-xs mt-1">
+                              Featured
+                            </span>
+                          )}
+                        </div>
                       </div>
                       <div className="flex gap-2">
                         <Button size="sm" variant="outline" onClick={() => handleEdit(car)}>

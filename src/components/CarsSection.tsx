@@ -93,14 +93,14 @@ const CarsSection = () => {
         // Use sample data as fallback
         setCars(sampleCars.map(car => ({
           ...car,
-          image_url: null // Use local images for sample data
+          main_image_url: null // Use local images for sample data
         })));
       } else {
         // If no cars in database, show sample cars
         if (data.length === 0) {
           setCars(sampleCars.map(car => ({
             ...car,
-            image_url: null
+            main_image_url: null
           })));
         } else {
           setCars(data);
@@ -110,7 +110,7 @@ const CarsSection = () => {
       console.error("Error:", error);
       setCars(sampleCars.map(car => ({
         ...car,
-        image_url: null
+        main_image_url: null
       })));
     } finally {
       setLoading(false);
@@ -118,9 +118,9 @@ const CarsSection = () => {
   };
 
   const getCarImage = (car: any) => {
-    // Use image_url from database if available, otherwise use sample images
-    if (car.image_url) {
-      return car.image_url;
+    // Use main_image_url from database if available, otherwise use sample images
+    if (car.main_image_url) {
+      return car.main_image_url;
     }
     
     // Use local images for sample data

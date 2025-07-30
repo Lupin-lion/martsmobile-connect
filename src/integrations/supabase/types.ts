@@ -23,7 +23,12 @@ export type Database = {
           featured: boolean | null
           fuel: string
           id: string
-          image_url: string | null
+          image_1_url: string | null
+          image_2_url: string | null
+          image_3_url: string | null
+          image_4_url: string | null
+          image_5_url: string | null
+          main_image_url: string | null
           mileage: string | null
           name: string
           price: string
@@ -39,7 +44,12 @@ export type Database = {
           featured?: boolean | null
           fuel: string
           id?: string
-          image_url?: string | null
+          image_1_url?: string | null
+          image_2_url?: string | null
+          image_3_url?: string | null
+          image_4_url?: string | null
+          image_5_url?: string | null
+          main_image_url?: string | null
           mileage?: string | null
           name: string
           price: string
@@ -55,7 +65,12 @@ export type Database = {
           featured?: boolean | null
           fuel?: string
           id?: string
-          image_url?: string | null
+          image_1_url?: string | null
+          image_2_url?: string | null
+          image_3_url?: string | null
+          image_4_url?: string | null
+          image_5_url?: string | null
+          main_image_url?: string | null
           mileage?: string | null
           name?: string
           price?: string
