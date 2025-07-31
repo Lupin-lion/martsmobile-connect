@@ -113,16 +113,16 @@ const Cars = () => {
     },
     {
       id: "8",
-      name: "Porsche Macan",
-      price: "$65,000",
+      name: "Ford Ranger",
+      price: "$35,000",
       image: car3,
-      year: "2022",
-      fuel: "Petrol",
-      transmission: "PDK",
-      description: "Compact luxury SUV with sports car DNA. Exceptional handling, premium interior, and powerful turbocharged engine. Perfect blend of performance and practicality.",
-      mileage: "30,000 km",
-      engine: "2.0L Turbo",
-      link: "/cars/porsche-macan-2022"
+      year: "2023",
+      fuel: "Diesel",
+      transmission: "Automatic",
+      description: "Rugged pickup truck built for work and adventure. Exceptional towing capacity, off-road capability, and durable construction. Perfect for both business and recreational use.",
+      mileage: "25,000 km",
+      engine: "2.0L Turbo Diesel",
+      link: "/cars/ford-ranger-2023"
     }
   ];
 
@@ -185,7 +185,7 @@ const Cars = () => {
     if (car.name.includes("Toyota")) return car1;
     if (car.name.includes("Honda")) return car3;
     if (car.name.includes("Lexus")) return bmwImage;
-    if (car.name.includes("Porsche")) return car2;
+    if (car.name.includes("Ford")) return car3;
     
     return car1;
   };
