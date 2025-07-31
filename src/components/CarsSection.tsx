@@ -184,7 +184,7 @@ const CarsSection = () => {
               Manage Cars
             </Button>
           ) : user ? (
-            <Button size="lg" variant="outline">
+            <Button size="lg" variant="outline" onClick={() => navigate("/cars")}>
               View All Cars
             </Button>
           ) : (
