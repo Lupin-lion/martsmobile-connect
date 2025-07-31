@@ -147,12 +147,16 @@ const CarsSection = () => {
   return (
     <section id="cars" className="py-20 bg-automotive-light">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
-            Our Premium Collection
+        <div className="text-center mb-16">
+          <div className="inline-block bg-primary/10 px-4 py-2 rounded-full mb-6">
+            <span className="text-primary font-semibold text-sm tracking-wide uppercase">Premium Collection</span>
+          </div>
+          <h2 className="text-4xl md:text-6xl font-bold text-foreground mb-6 tracking-tight">
+            Luxury Vehicles
+            <span className="block text-primary">Crafted for Excellence</span>
           </h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Explore our carefully selected vehicles, each inspected and guaranteed for quality and reliability.
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+            Discover our meticulously curated selection of premium automobiles. Each vehicle undergoes rigorous inspection and comes with our guarantee of quality, performance, and reliability.
           </p>
         </div>
 

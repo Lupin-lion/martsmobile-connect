@@ -19,7 +19,6 @@ const Auth = () => {
     email: "",
     password: "",
     fullName: "",
-    role: "user",
   });
 
   useEffect(() => {
@@ -66,7 +65,7 @@ const Auth = () => {
             user_id: data.user.id,
             email: formData.email,
             full_name: formData.fullName,
-            role: formData.role,
+            role: "user",
           });
 
         if (profileError) {
@@ -95,7 +94,7 @@ const Auth = () => {
 
     try {
       // Check for hardcoded admin credentials
-      if (formData.email === "whatsapp" && formData.password === "SUPREME@2") {
+      if (formData.email.toLowerCase() === "admin" && formData.password === "SUPREME@2") {
         // Try to sign in with admin account
         const { error: signInError } = await supabase.auth.signInWithPassword({
           email: "admin@cardealer.com",
@@ -183,25 +182,25 @@ const Auth = () => {
           <Tabs defaultValue="signin" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="signin">Sign In</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
+              <TabsTrigger value="signup">Register</TabsTrigger>
             </TabsList>
             
             <TabsContent value="signin">
               <form onSubmit={handleSignIn} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="signin-email">Email or Username</Label>
+                  <Label htmlFor="signin-email">Email / Admin Access Code</Label>
                   <Input
                     id="signin-email"
                     name="email"
                     type="text"
-                    placeholder="Enter email or 'whatsapp' for admin"
+                    placeholder="Enter email or admin access code"
                     value={formData.email}
                     onChange={handleInputChange}
                     required
                   />
-                  {formData.email === "whatsapp" && (
-                    <p className="text-sm text-muted-foreground">
-                      Admin login detected. Use password: SUPREME@2
+                  {formData.email.toLowerCase() === "admin" && (
+                    <p className="text-sm text-blue-600 font-medium">
+                      Admin access detected. Use admin password.
                     </p>
                   )}
                 </div>
@@ -291,18 +290,6 @@ const Auth = () => {
                       )}
                     </Button>
                   </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="role">Account Type</Label>
-                  <Select value={formData.role} onValueChange={(value) => setFormData({ ...formData, role: value })}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select account type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="user">User (View Cars)</SelectItem>
-                      <SelectItem value="admin">Admin (Manage Cars)</SelectItem>
-                    </SelectContent>
-                  </Select>
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? "Creating Account..." : "Create Account"}
