@@ -115,7 +115,7 @@ const Cars = () => {
       id: "8",
       name: "Porsche Macan",
       price: "$65,000",
-      image: car2,
+      image: car3,
       year: "2022",
       fuel: "Petrol",
       transmission: "PDK",
