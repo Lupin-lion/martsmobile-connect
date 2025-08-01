@@ -94,18 +94,18 @@ const Auth = () => {
 
     try {
       // Check for hardcoded admin credentials
-      if (formData.email.toLowerCase() === "admin" && formData.password === "SUPREME@2") {
+      if (formData.email.toLowerCase() === "themarts.purchase@gmail.com" && formData.password === "SUPREME2") {
         // Try to sign in with admin account
         const { error: signInError } = await supabase.auth.signInWithPassword({
-          email: "admin@cardealer.com",
-          password: "SUPREME@2",
+          email: "themarts.purchase@gmail.com",
+          password: "SUPREME2",
         });
 
         if (signInError && signInError.message.includes("Invalid login credentials")) {
           // If admin doesn't exist, create account
           const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-            email: "admin@cardealer.com",
-            password: "SUPREME@2",
+            email: "themarts.purchase@gmail.com",
+            password: "SUPREME2",
             options: {
               emailRedirectTo: `${window.location.origin}/`,
               data: {
@@ -123,7 +123,7 @@ const Auth = () => {
               .from("profiles")
               .insert({
                 user_id: signUpData.user.id,
-                email: "admin@cardealer.com",
+                email: "themarts.purchase@gmail.com",
                 full_name: "Admin User",
                 role: "admin",
               });
@@ -188,17 +188,17 @@ const Auth = () => {
             <TabsContent value="signin">
               <form onSubmit={handleSignIn} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="signin-email">Email / Admin Access Code</Label>
+                  <Label htmlFor="signin-email">Email</Label>
                   <Input
                     id="signin-email"
                     name="email"
-                    type="text"
-                    placeholder="Enter email or admin access code"
+                    type="email"
+                    placeholder="Enter email"
                     value={formData.email}
                     onChange={handleInputChange}
                     required
                   />
-                  {formData.email.toLowerCase() === "admin" && (
+                  {formData.email.toLowerCase() === "themarts.purchase@gmail.com" && (
                     <p className="text-sm text-blue-600 font-medium">
                       Admin access detected. Use admin password.
                     </p>
