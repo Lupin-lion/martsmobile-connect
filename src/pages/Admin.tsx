@@ -128,14 +128,12 @@ const Admin = () => {
 
   const fetchSatisfiedCustomers = async () => {
     try {
-      // @ts-ignore - New table not yet in types
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("satisfied_customers")
         .select("*")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      // @ts-ignore - Type will be correct after migration
       setSatisfiedCustomers(data || []);
     } catch (error) {
       console.error("Error fetching satisfied customers:", error);
@@ -144,8 +142,7 @@ const Admin = () => {
 
   const fetchCarViews = async () => {
     try {
-      // @ts-ignore - New table not yet in types
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("car_views")
         .select("car_id")
         .order("viewed_at", { ascending: false });
@@ -331,8 +328,7 @@ const Admin = () => {
     try {
       if (editingId && activeTab === 'customers') {
         // Update existing customer
-        // @ts-ignore - New table not yet in types
-        const { error } = await supabase
+        const { error } = await (supabase as any)
           .from("satisfied_customers")
           .update(customerFormData)
           .eq("id", editingId);
@@ -345,8 +341,7 @@ const Admin = () => {
         });
       } else {
         // Add new customer
-        // @ts-ignore - New table not yet in types
-        const { error } = await supabase
+        const { error } = await (supabase as any)
           .from("satisfied_customers")
           .insert(customerFormData);
 
@@ -435,8 +430,7 @@ const Admin = () => {
   const handleCustomerDelete = async (id: string) => {
     if (confirm("Are you sure you want to delete this customer?")) {
       try {
-        // @ts-ignore - New table not yet in types
-        const { error } = await supabase
+        const { error } = await (supabase as any)
           .from("satisfied_customers")
           .delete()
           .eq("id", id);
